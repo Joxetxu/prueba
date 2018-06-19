@@ -1,0 +1,8 @@
+<config>
+    <account username="grex@gsyc.urjc.es" passwd="987654321" />
+    <uaserver ip="127.0.0.1" port="6040" />
+    <rtpaudio port="7002" />
+    <regproxy ip= "127.0.0.1" port="6041" />
+    <log path="ua2log.txt"/>
+    <audio path="La_Flaca.mp3"/>
+</config>
