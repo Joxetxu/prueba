@@ -1,0 +1,8 @@
+<config>
+    <account username="i.rodriguezlop@alumnos.urcj.es" passwd="123456789" />
+    <uaserver ip="127.0.0.1" port="6038" />
+    <rtpaudio port="7001" />
+    <regproxy ip= "127.0.0.1" port="6039" />
+    <log path="ua1log.txt"/>
+    <audio path="La_Flaca.mp3"/>
+</config>
