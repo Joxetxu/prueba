@@ -1,0 +1,5 @@
+<config>
+    <server name="Proxy" ip="" puerto="6001"/>
+    <database path="pr.txt" passwdpath="passwd.txt"/>
+    <log path="logpr.txt"/>
+</config>
