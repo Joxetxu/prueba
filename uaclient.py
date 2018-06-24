@@ -55,34 +55,42 @@ def register():
     """
     Cuando quiero registrarme en el proxy
     """
-    DATA = (LINE1 + USER + ":" + str(PORT) + ' ' + SIP + 'Expires:' + EXPIRES + "\r\n\r\n")
-    my_socket.send(bytes(DATA, 'utf-8'))
+    Line = (LINE1 + USER + ":" + str(PORT) + ' ' + SIP + 'Expires:' + EXPIRES + "\r\n\r\n")
+    my_socket.send(bytes(Line, 'utf-8'))
     #logger.action_send(Proxy_Ip, Proxy_Port, DATA)
 
 def invite():
-    DATA = (LINE2 + DIR + ' ' + SIP + "Content-Type: application/sdp\r\n\r\n" +
-            "v=0\r\no=" + User_Name + " " + SERVER + "\r\ns=misesion" +
-            "\r\nt=0\r\nm=audio " + 'Audio_Puerto' + "RTP")
-    my_socket.send(bytes(DATA,'utf-8'))
+    Line = (LINE2 + DIR + ' ' + SIP + 'Content-Type: application/sdp\r\n\r\n' +
+            'v=0\r\no=' + USER + ' ' + SERVER + '\r\ns=misesion' +
+            '\r\nt=0\r\nm=audio' + AUDIO_PORT + 'RTP' )
+    my_socket.send(bytes(Line,'utf-8'))
     #logger.action_send(Proxy_Ip, Proxy_Port, DATA)
 
 def ack():
-    DATA = (LINE3 + DIR + SIP)
-    my_socket.send(bytes(DATA, "utf-8"))
+    Line = (LINE3 + DIR + SIP)
+    my_socket.send(bytes(Line, "utf-8"))
     #logger.action_send(Proxy_Ip, Proxy_Port, DATA)
 
 def bye():
-    DATA = (LINE4 + DIR + SIP)
-    my_socket.send(bytes(DATA, "utf-8"))
+    Line = (LINE4 + DIR + SIP)
+    my_socket.send(bytes(Line, "utf-8"))
     #logger.action_send(Proxy_Ip, Proxy_Port, DATA)
+
+def register_nonce(nonce):
+    h = hashlib.sha1(bytes(PASSWD + "\n", "utf-8"))
+    h.update(bytes(nonce, "utf-8"))
+    digest = h.hexdigest()
+    Line = ("REGISTER sip:" + USER + ":" + str(PORT) + " SIP/2.0\r\n" +
+            "Expires: " + EXPIRES + "\r\n\r\n" +
+            "Authorization: Digest response=" + digest +
+            "\r\n\r\n")
+    my_socket.send(bytes(Line, "utf-8"))
 
 if __name__ == '__main__':
     parser = make_parser()
     cHandler = SmallSMILHandler()
     parser.setContentHandler(cHandler)
     parser.parse(open(sys.argv[1]))
-
-    print(cHandler.list)
 
 # Constantes. Dirección IP del servidor y contenido a enviar
 # Creamos el socket, lo configuramos y lo atamos a un servidor/puerto
@@ -110,25 +118,35 @@ with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as my_socket:
         DIR = LINE.split()[2]
         invite()
     elif METHOD == METHODS[3]:
-        #Tengo que declarar la variable user_to_send pero no se que es
         DIR = LINE.split()[2]
         bye()
 
-    print("Enviando:", '')
+    print("Enviando:", LINE.split(' ')[1:])
 
     try:
         data = my_socket.recv(1024)
-        recibido = data.decode('utf-8').split()
-        print('Recibido -- ', data.decode('utf-8'))
     except ConnectionRefusedError:
         sys.exit('Server is not listening')
 
     if data.decode('utf-8').split()[1] == '100':
-        print('x')
+        print('Recibido -- ', data.decode('utf-8'))
+        my_socket.connect((PROXY_IP, int(PROXY_PORT)))
+        ack()
+        aEjecutar = ('./mp32rtp -i' + USER + '-p 23032 <' + AUDIO_PORT + " < " + FILE_AUDIO)
+        os.system(aEjecutar)
+        DATA = "Enviando fichero de audio."
+        order = "cvlc rtp://@127.0.0.1:" + AUDIO_PORT
+        os.system(order)
     elif data.decode('utf-8').split()[1] == '200':
-        print('y')
+        print('Recibido -- ', data.decode('utf-8'))
     elif data.decode('utf-8').split()[1] == '401':
-        print('z')
+        print('Recibido -- ', data.decode('utf-8'))
+        my_socket.connect((PROXY_IP, int(PROXY_PORT)))
+        register_nonce(data.decode('utf-8').split(' ')[2])
+        data = my_socket.recv(1024)
+        print(data.decode('utf-8'))
     else:
         print(data.decode('utf-8'))
+    print('x')
+    print(data.decode('utf-8'))
 print("Socket terminado.")
