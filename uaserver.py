@@ -43,6 +43,7 @@ class SmallSMILHandler(ContentHandler):
 
 ERROR_405 = b"SIP/2.0 405 Method Not Allowed\r\n\r\n"
 ERROR_400 = b"SIP/2.0 400 Bad Request\r\n\r\n"
+ERROR_401 = b"SIP/2.0 401 Unauthorized\r\n"
 
 class EchoHandler(socketserver.DatagramRequestHandler):
     """
@@ -67,7 +68,7 @@ class EchoHandler(socketserver.DatagramRequestHandler):
             elif METHOD == METHODS[1]:
                 self.wfile.write(b"SIP/2.0 200 OK\r\n\r\n")
             elif METHOD == METHODS[2]:
-                aEjecutar = 'mp32rtp -i 127.0.0.1 -p 23032 <' + La_Flaca.mp3
+                aEjecutar = ('./mp32rtp -i' + USER + '-p 23032 <' + AUDIO_PORT + " < " + FILE_AUDIO)
                 os.system(aEjecutar)
             elif line.decode('utf-8').split()[1] != METHODS:
                 self.wfile.write(ERROR_405)
@@ -92,7 +93,6 @@ if __name__ == "__main__":
     AUDIO_PORT = cHandler.list['rtpaudioport']
     FILE_AUDIO = cHandler.list['audiopath']
 
-    print(cHandler.list)
     serv = socketserver.UDPServer((SERVER,int(PORT)), EchoHandler)
     try:
         print("Listening...")
