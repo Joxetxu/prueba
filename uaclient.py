@@ -57,24 +57,20 @@ def register():
     """
     Line = (LINE1 + USER + ":" + str(PORT) + ' ' + SIP + 'Expires:' + EXPIRES + "\r\n\r\n")
     my_socket.send(bytes(Line, 'utf-8'))
-    #logger.action_send(Proxy_Ip, Proxy_Port, DATA)
 
 def invite():
     Line = (LINE2 + DIR + ' ' + SIP + 'Content-Type: application/sdp\r\n\r\n' +
             'v=0\r\no=' + USER + ' ' + SERVER + '\r\ns=misesion' +
             '\r\nt=0\r\nm=audio' + AUDIO_PORT + 'RTP' )
     my_socket.send(bytes(Line,'utf-8'))
-    #logger.action_send(Proxy_Ip, Proxy_Port, DATA)
 
 def ack():
     Line = (LINE3 + DIR + SIP)
     my_socket.send(bytes(Line, "utf-8"))
-    #logger.action_send(Proxy_Ip, Proxy_Port, DATA)
 
 def bye():
     Line = (LINE4 + DIR + SIP)
     my_socket.send(bytes(Line, "utf-8"))
-    #logger.action_send(Proxy_Ip, Proxy_Port, DATA)
 
 def register_nonce(nonce):
     h = hashlib.sha1(bytes(PASSWD + "\n", "utf-8"))
@@ -147,6 +143,5 @@ with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as my_socket:
         print(data.decode('utf-8'))
     else:
         print(data.decode('utf-8'))
-    print('x')
     print(data.decode('utf-8'))
 print("Socket terminado.")
