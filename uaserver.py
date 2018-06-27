@@ -56,7 +56,6 @@ class EchoHandler(socketserver.DatagramRequestHandler):
         """
         line = self.rfile.read()
         print("El cliente nos manda ", line.decode('utf-8'))
-        #logger
         if line:
             METHOD = line.decode('utf-8').split()[0]
             METHODS = ['INVITE', 'BYE', 'ACK']
