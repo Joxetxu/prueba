@@ -10,7 +10,6 @@ import os
 from xml.sax import make_parser
 from xml.sax.handler import ContentHandler
 
-
 if len(sys.argv) != 2:
     sys.exit('Usage: python3 uaserver.py config')
 
@@ -67,12 +66,13 @@ class EchoHandler(socketserver.DatagramRequestHandler):
             elif METHOD == METHODS[1]:
                 self.wfile.write(b"SIP/2.0 200 OK\r\n\r\n")
             elif METHOD == METHODS[2]:
-                aEjecutar = ('./mp32rtp -i' + USER + '-p 23032 <' + AUDIO_PORT + " < " + FILE_AUDIO)
+                aEjecutar = './mp32rtp -i' + '127.0.0.1' + '-p' + AUDIO_PORT
+                aEjecutar += '<' + FILE_AUDIO
                 os.system(aEjecutar)
             elif line.decode('utf-8').split()[1] != METHODS:
                 self.wfile.write(ERROR_405)
             else:
-                self.wfile.write(ERROR_400)
+                self.wfile.write("SIP/2.0 400 Method Not Allowed")
             print(line.decode('utf-8'))
         else:
             pass
@@ -91,6 +91,7 @@ if __name__ == "__main__":
     USER = cHandler.list['accountusername']
     AUDIO_PORT = cHandler.list['rtpaudioport']
     FILE_AUDIO = cHandler.list['audiopath']
+    FILE_LOG = cHandler.list['logpath']
 
     serv = socketserver.UDPServer((SERVER,int(PORT)), EchoHandler)
     try:
