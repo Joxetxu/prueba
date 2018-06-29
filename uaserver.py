@@ -13,8 +13,6 @@ from xml.sax.handler import ContentHandler
 if len(sys.argv) != 2:
     sys.exit('Usage: python3 uaserver.py config')
 
-SERVER = '127.0.0.1'
-
 class SmallSMILHandler(ContentHandler):
     """
         Clase para manejar SmallSMILHandler
@@ -48,32 +46,37 @@ class EchoHandler(socketserver.DatagramRequestHandler):
     """
     Echo server class
     """
+    dicc = {}
+    rtp = {}
+
     def handle(self):
         """
         handle method of the server class
         (all requests will be handled by this method)
         """
         line = self.rfile.read()
-        print("El cliente nos manda ", line.decode('utf-8'))
         if line:
-            METHOD = line.decode('utf-8').split()[0]
+            METHOD = line.decode('utf-8').split()
             METHODS = ['INVITE', 'BYE', 'ACK']
             #debemos comprobar la peticion
-            if METHOD == METHODS[0]:
+            if METHOD[0] == METHODS[0]:
+                self.rtp['1'] = METHOD[7].split("\r\n")[0], METHOD[11]
                 self.wfile.write(b"SIP/2.0 100 Trying\r\n\r\n")
                 self.wfile.write(b"SIP/2.0 180 Ringing\r\n\r\n")
                 self.wfile.write(b"SIP/2.0 200 OK\r\n")
-            elif METHOD == METHODS[1]:
+                self.wfile.write(SDP)
+                #mi data es su message
+                data = 'SIP/2.0 200 OK\r\n' + SDP.decode('utf-8')
+            elif METHOD[0] == METHODS[1]:
                 self.wfile.write(b"SIP/2.0 200 OK\r\n\r\n")
-            elif METHOD == METHODS[2]:
-                aEjecutar = './mp32rtp -i' + '127.0.0.1' + '-p' + AUDIO_PORT
+            elif METHOD[0] == METHODS[2]:
+                aEjecutar = './mp32rtp -i' + self.rtp['1'][0] + '-p' + self.rtp['1'][0]
                 aEjecutar += '<' + FILE_AUDIO
                 os.system(aEjecutar)
-            elif line.decode('utf-8').split()[1] != METHODS:
-                self.wfile.write(ERROR_405)
+            elif METHOD[0] != METHODS:
+                self.wfile.write(ERROR_401)
             else:
                 self.wfile.write("SIP/2.0 400 Method Not Allowed")
-            print(line.decode('utf-8'))
         else:
             pass
 
@@ -92,7 +95,11 @@ if __name__ == "__main__":
     AUDIO_PORT = cHandler.list['rtpaudioport']
     FILE_AUDIO = cHandler.list['audiopath']
     FILE_LOG = cHandler.list['logpath']
-
+    sdp = ('Content-Type: application/sdp\r\n\r\n' +
+                'v=0\r\no=' + USER + ' ' + SERVER +
+                '\r\ns=misesion' + '\r\nt=0\r\nm=audio ' +
+                AUDIO_PORT + ' RTP')
+    SDP = (bytes(sdp, 'utf-8'))
     serv = socketserver.UDPServer((SERVER,int(PORT)), EchoHandler)
     try:
         print("Listening...")
