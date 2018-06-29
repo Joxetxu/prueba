@@ -49,6 +49,15 @@ class SmallSMILHandler(ContentHandler):
         def get_tags(self):
             return self.list
 
+def send_music():
+    aEjecutar = ("./mp32rtp -i " + USER_SEND_IP +
+                 " -p " + USER_AUDIO_PORT)
+    aEjecutar += " < " + FILE_AUDIO
+    os.system(aEjecutar)
+    DATA = "Enviando fichero de audio."
+    order = "cvlc rtp://@127.0.0.1:" + AUDIO_PORT
+    os.system(order)
+
 def register():
     """
     Cuando quiero registrarme en el proxy
@@ -106,41 +115,41 @@ with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as my_socket:
     my_socket.connect((SERVER, int(PORT)))
     if METHOD == METHODS[0]:
         Invitation = PROXY_IP
-        EXPIRES = LINE.split()[2]
+        EXPIRES = sys.argv[3]
         register()
     elif METHOD == METHODS[1]:
-        DIR = LINE.split()[2]
+        DIR = sys.argv[3]
         invite()
     elif METHOD == METHODS[3]:
-        DIR = LINE.split()[2]
+        DIR1 = sys.argv[3]
         bye()
 
     print("Enviando:", LINE.split(' ')[1:])
 
     try:
         data = my_socket.recv(1024)
+        Recieve = data.decode('utf-8').split(" ")
     except ConnectionRefusedError:
         sys.exit('Server is not listening')
-    print('x')
-    print(data.decode('utf-8').split()[1])
+
     if data.decode('utf-8').split()[1] == '100':
-        print('Recibido -- ', data.decode('utf-8'))
-        my_socket.connect((PROXY_IP, int(PROXY_PORT)))
-        aEjecutar = './mp32rtp -i' + '127.0.0.1' + '-p' + AUDIO_PORT
-        aEjecutar += '<' + FILE_AUDIO
-        os.system(aEjecutar)
+        USER_SEND = data.decode('utf-8').split(' ')[7].split('=')[2]
+        USER_SEND_IP = data.decode('utf-8').split()[13]
+        USER_AUDIO_PORT = data.decode('utf-8').split()[17]
+        ack()
         DATA = "Enviando fichero de audio."
-        order = "cvlc rtp://@127.0.0.1:" + AUDIO_PORT
-        os.system(order)
+        send_music()
     elif data.decode('utf-8').split()[1] == '200':
         print('Recibido -- ', data.decode('utf-8'))
     elif data.decode('utf-8').split()[1] == '401':
         print('Recibido -- ', data.decode('utf-8'))
         my_socket.connect((PROXY_IP, int(PROXY_PORT)))
-        register_nonce(data.decode('utf-8').split(' ')[2])
+        #Me falta el nonce que me tiene que llegar del PROXY_IP
+        #cuando me llega el nonce entonce lo declaro como variable nonce
+        #y esa variable sera del mensaje que me llegue del proxy ese numero nonce
+        #register_nonce(data.decode('utf-8'))
         data = my_socket.recv(1024)
         print(data.decode('utf-8'))
     else:
         print(data.decode('utf-8'))
-    print(data.decode('utf-8'))
 print("Socket terminado.")
