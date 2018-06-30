@@ -66,17 +66,17 @@ def register():
     my_socket.send(bytes(Line, 'utf-8'))
 
 def invite():
-    Line = (LINE2 + DIR + ' ' + SIP + 'Content-Type: application/sdp\r\n\r\n' +
+    Line = (LINE2 + USER + ' ' + SIP + 'Content-Type: application/sdp\r\n\r\n' +
             'v=0\r\no=' + USER + ' ' + SERVER + '\r\ns=misesion' +
-            '\r\nt=0\r\nm=audio ' + AUDIO_PORT + ' RTP' )
+            '\r\nt=0\r\nm=audio ' + AUDIO_PORT + ' RTP' + '\r\n' )
     my_socket.send(bytes(Line,'utf-8'))
 
 def ack():
-    Line = (LINE3 + DIR + SIP)
+    Line = (LINE3 + USER + SIP)
     my_socket.send(bytes(Line, "utf-8"))
 
 def bye():
-    Line = (LINE4 + DIR + SIP)
+    Line = (LINE4 + USER + SIP)
     my_socket.send(bytes(Line, "utf-8"))
 
 def register_nonce(nonce):
@@ -136,6 +136,7 @@ with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as my_socket:
         USER_SEND = data.decode('utf-8').split(' ')[7].split('=')[2]
         USER_SEND_IP = data.decode('utf-8').split()[13]
         USER_AUDIO_PORT = data.decode('utf-8').split()[17]
+        print(data.decode('utf-8'))
         ack()
         DATA = "Enviando fichero de audio."
         send_music()
