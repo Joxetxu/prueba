@@ -1,5 +1,5 @@
 <config>
-    <server name="Proxy" ip="" port="6041"/>
+    <server name="Servidor_Proxy" ip="127.0.0.1" port="6041"/>
     <database path="pr.txt" passwdpath="passwd.txt"/>
     <log path="proxylog.txt"/>
 </config>
